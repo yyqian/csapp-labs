@@ -1,7 +1,9 @@
 # csapp-labs
 
-CMU 213: Introduction to Computer Systems (ICS)
+Labs downloaded from: [http://csapp.cs.cmu.edu/3e/labs.html](http://csapp.cs.cmu.edu/3e/labs.html)
 
-Book: Computer Systems A Programmer's Perspective
+Book: Computer Systems: A Programmer's Perspective, 3/E (CS:APP3e)
 
-Fall 2016
+Done:
+
+- datalab: except for `ilog2` & `float_i2f`

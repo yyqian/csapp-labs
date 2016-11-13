@@ -289,7 +289,11 @@ int ilog2(int x) {
  *   Rating: 2
  */
 unsigned float_neg(unsigned uf) {
- return 2;
+  int mask = (1 << 31);
+  if ((uf & (~mask)) > (0xFF << 23)) { // 0xFF << 23 = 0 11111111 000...000
+    return uf;
+  }
+  return uf ^ mask; // 0 ^ 1 = 1, 1 ^ 1 = 0
 }
 /* 
  * float_i2f - Return bit-level equivalent of expression (float) x
@@ -315,5 +319,11 @@ unsigned float_i2f(int x) {
  *   Rating: 4
  */
 unsigned float_twice(unsigned uf) {
-  return 2;
+  int signMask = (1 << 31);
+  if ((uf & (~signMask)) >= (0xFF << 23)) {
+    return uf;
+  } else if ((uf & (0xFF << 23)) == 0) {
+    return (uf & ~(0x1FF << 23)) << 1 | (uf & signMask);
+  }
+  return uf + (1 << 23);
 }

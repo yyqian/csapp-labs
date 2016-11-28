@@ -201,7 +201,7 @@ stepi        # 运行下一行汇编代码，直到运行到 phase_2 的汇编�
 0x401029 <phase_4+29>   cmp    $0x2,%eax
 0x40102c <phase_4+32>   jne    0x401035 <phase_4+41>     # 必须是两个数字
 0x40102e <phase_4+34>   cmpl   $0xe,0x8(%rsp)
-0x401033 <phase_4+39>   jbe    0x40103a <phase_4+46>     # 第一个数字必须 <= 14（无符号）
+0x401033 <phase_4+39>   jbe    0x40103a <phase_4+46>     # 第一个数字必须 <= 14, >= 0（无符号）
 0x401035 <phase_4+41>   callq  0x40143a <explode_bomb>
 0x40103a <phase_4+46>   mov    $0xe,%edx                 # func4 第三个参数为 14
 0x40103f <phase_4+51>   mov    $0x0,%esi                 # 第二个参数为 0

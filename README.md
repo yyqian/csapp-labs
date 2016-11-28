@@ -6,7 +6,6 @@ Labs for self-study, downloaded from: [http://csapp.cs.cmu.edu/3e/labs.html](htt
 
 ToDoList:
 
-- Bomb Lab
 - Attack Lab
 - Cache Lab
 - Shell Lab
@@ -16,3 +15,4 @@ ToDoList:
 Done:
 
 - Data Lab: except for `ilog2` & `float_i2f`
+- Bomb Lab: Phase 1 ~ 4

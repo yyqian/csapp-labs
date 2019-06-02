@@ -268,3 +268,58 @@ int func4(int n, int i, int j) {
 3 0
 7 0
 ```
+
+## phase 5
+
+这段代码做了什么(参考https://www.jianshu.com/p/479333cbccc4)：
+1. 要求输入6个字符，然后依次循环这个输入的字符数组
+2. 每一轮循环取一个字符，然后取这个字符的后四位作为索引，在第二个字符常量处取一个字符
+依次存放到0x10(%rsp)处
+3. 最后将新0x10(%rsp)处的字符串和"flyers"比较，相同则通过，否则爆炸
+所以我们需要根据结果倒推，比如flyers中的f字符是由我们输入的第一个字符的后四位作为索引在
+"maduiersnfotvbylSo you think you can stop the bomb with ctrl-c, do you?"取得，但是我们知道四位二进制最多索引16
+个位置，所以这一长串的字符只有前16个可以来取我们需要的字符。所以f的索引为9,即二进制1001，只需要查询ascii表后四位为1001的字符均可，我取的Ｙ。以此类推得到6个字符的一个组合：YONEFw
+
+关键代码解释：
+```
+0000000000401062 <phase_5>:
+  401062:       53                      push   %rbx
+  401063:       48 83 ec 20             sub    $0x20,%rsp
+  401067:       48 89 fb                mov    %rdi,%rbx
+  40106a:       64 48 8b 04 25 28 00    mov    %fs:0x28,%rax
+  401071:       00 00 
+  401073:       48 89 44 24 18          mov    %rax,0x18(%rsp)
+  401078:       31 c0                   xor    %eax,%eax                       %rax置0
+  40107a:       e8 9c 02 00 00          callq  40131b <string_length>
+  40107f:       83 f8 06                cmp    $0x6,%eax                       检查输入字符串长度是否为6
+  401082:       74 4e                   je     4010d2 <phase_5+0x70an>
+  401084:       e8 b1 03 00 00          callq  40143a <explode_bomb>
+  401089:       eb 47                   jmp    4010d2 <phase_5+0x70>
+  40108b:       0f b6 0c 03             movzbl (%rbx,%rax,1),%ecx              将%rbx+%rax内存地址的值传递给%ecx
+  40108f:       88 0c 24                mov    %cl,(%rsp)                      %cl是%ecx的低8位，这步是将%ecx的低8位传递给(%rsp)
+  401092:       48 8b 14 24             mov    (%rsp),%rdx                     下面两步是将(%rsp)传递给%rdx，并取其低4位
+  401096:       83 e2 0f                and    $0xf,%edx                       00001111&%edx取低4位
+  401099:       0f b6 92 b0 24 40 00    movzbl 0x4024b0(%rdx),%edx             0x4024b0地址偏移%rdx的值传递给%edx(通过'(gdb) x/s 0x4024b0
+'查看该地址存放的变量得：'maduiersnfotvbylSo you think you can stop the bomb with ctrl-c, do you?'，是一个字符串)，所以这行代码的意思是将这个字符串的第(%rdx)个字母传递给%edx
+  4010a0:       88 54 04 10             mov    %dl,0x10(%rsp,%rax,1)          将%edx的低四位%dl传递给0x10(%rsp,%rax,1)，通过后续代码可知%rax是>循环递增的，所以这行代码的意思是以%rsp+10的地址为起点，每一次循环存放一个字符
+  4010a4:       48 83 c0 01             add    $0x1,%rax                       以下两行是设置循环的变量和结束条件
+  4010a8:       48 83 f8 06             cmp    $0x6,%rax
+  4010ac:       75 dd                   jne    40108b <phase_5+0x29>
+  4010ae:       c6 44 24 16 00          movb   $0x0,0x16(%rsp)                 将0x16(%rsp)置为0，作为字符串结束的标识
+  4010b3:       be 5e 24 40 00          mov    $0x40245e,%esi                  将0x40245e传递给%esi(调用函数的第二个参数)
+  4010b8:       48 8d 7c 24 10          lea    0x10(%rsp),%rdi                 将0x10(%rsp)传递给%rdi(上面拼接出来的字符串的存放地址，也是调用>函数的第一个参数)
+  4010bd:       e8 76 02 00 00          callq  401338 <strings_not_equal>
+  4010c2:       85 c0                   test   %eax,%eax
+  4010c4:       74 13                   je     4010d9 <phase_5+0x77>
+  4010c6:       e8 6f 03 00 00          callq  40143a <explode_bomb>
+  4010cb:       0f 1f 44 00 00          nopl   0x0(%rax,%rax,1)
+  4010d0:       eb 07                   jmp    4010d9 <phase_5+0x77>
+  4010d2:       b8 00 00 00 00          mov    $0x0,%eax
+  4010d7:       eb b2                   jmp    40108b <phase_5+0x29>
+  4010d9:       48 8b 44 24 18          mov    0x18(%rsp),%rax
+  4010de:       64 48 33 04 25 28 00    xor    %fs:0x28,%rax
+  4010e5:       00 00 
+  4010e7:       74 05                   je     4010ee <phase_5+0x8c>
+  4010e9:       e8 42 fa ff ff          callq  400b30 <__stack_chk_fail@plt>
+
+```
